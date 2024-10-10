@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload with Pinata’s Files API</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <h2>File Upload with Pinata’s Files API</h2>
+
+        <form id="uploadForm">
+            <div id="dropZone" class="drop-zone">
+                <div class="folder">
+                    <div class="front-side">
+                        <div class="tip"></div>
+                        <div class="cover"></div>
+                    </div>
+                    <div class="back-side cover"></div>
+                </div>
+                Drag and drop a file or click to select
+            </div>
+            <input type="file" id="fileInput" name="file" required>
+            <!-- <button type="submit">Upload</button> -->
+        </form>
+
+        <!-- Progress bar -->
+        <div class="progress-bar-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <!-- Loading message -->
+        <div id="loading" class="loading">Uploading...</div>
+        <div id="uploadStatus"></div>
+        <button id="btnAnother" class="btn" type="button">Upload another file</button>
+    </div>
+    <div id="uploadedFilesContainer">
+        <div class="w-[950px] rounded-lg bg-neutral-50 shadow-lg p-6">
+            <h2 class="text-xl font-title mb-4">Uploaded files</h2>
+            <table id="fileTable" class="w-full table-auto border-collapse overflow-hidden">
+                <thead>
+                    <tr class="bg-neutral-100 transition-all duration-300 ease-in-out bottomBorder">
+                        <th class="p-4 text-left font-semibold">File Name</th>
+                        <th class="p-4 text-left font-semibold">CID</th>
+                        <th class="p-4 text-left font-semibold">View File</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="even:bg-neutral-200 transition-all duration-300 ease-in-out hover:bg-primary">
+                        <!-- File rows will be inserted here -->
+                    </tr>
+                </tbody>
+            </table>
+            <div>
+                <div>
+
+                    <script>
+                        const dropZone = document.getElementById('dropZone');
+                        const fileInput = document.getElementById('fileInput');
+                        const progressBarContainer = document.querySelector('.progress-bar-container');
+                        const progressBar = document.getElementById('progressBar');
+                        const loading = document.getElementById('loading');
+                        const uploadStatus = document.getElementById('uploadStatus');
+                        const btnAnother = document.getElementById('btnAnother');
+                        fileInput.style.display = "none";
+                        // Drag and Drop Events
+                        dropZone.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                            dropZone.classList.add('dragging');
+                        });
+
+                        dropZone.addEventListener('dragleave', () => {
+                            dropZone.classList.remove('dragging');
+                        });
+
+                        dropZone.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            dropZone.classList.remove('dragging');
+
+                            // Get the dropped file
+                            const files = e.dataTransfer.files;
+                            if (files.length > 0) {
+                                fileInput.files = files; // Set the fileInput to the dropped files
+                                uploadFile(files[0]);
+                            }
+                        });
+
+                        // Click event to open file dialog
+                        dropZone.addEventListener('click', () => {
+                            fileInput.click();
+                        });
+
+                        fileInput.addEventListener('change', () => {
+                            if (fileInput.files.length > 0) {
+                                uploadFile(fileInput.files[0]);
+                            }
+                        });
+
+                        btnAnother.addEventListener('click', () => {
+                            uploadForm.style.display = 'block';
+                            progressBarContainer.style.display = 'none';
+                            loading.style.display = 'none';
+                            btnAnother.style.display = 'none';
+                            uploadStatus.innerHTML = '';
+                            progressBar.style.width = '0';
+                            fileInput.value = "";
+                        });
+
+                        function uploadFile(file) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', '/upload', true);
+
+                            // Show the progress bar and loading message
+                            uploadForm.style.display = 'none';
+                            progressBarContainer.style.display = 'block';
+                            loading.style.display = 'block';
+                            btnAnother.style.disabled = 'true';
+                            uploadStatus.innerHTML = '';
+
+
+                            // Update progress bar during upload
+                            xhr.upload.onprogress = function (event) {
+                                if (event.lengthComputable) {
+                                    const percentComplete = (event.loaded / event.total) * 100;
+                                    progressBar.style.width = percentComplete + '%';
+                                }
+                            };
+
+                            // On upload success
+                            xhr.onload = function () {
+                                if (xhr.status === 200) {
+                                    uploadStatus.innerHTML = JSON.parse(xhr.response).message.toString();
+                                    btnAnother.style.disabled = 'false';
+                                    btnAnother.style.display = 'block';
+                                    progressBar.style.width = '100%';
+                                    fetchFiles();
+                                } else {
+                                    uploadStatus.innerHTML = JSON.parse(xhr.response).message.toString();
+                                    btnAnother.style.disabled = 'false';
+                                    progressBar.style.width = '0';
+                                }
+                                // Hide loading message
+                                loading.style.display = 'none';
+                            };
+
+                            // On upload error
+                            xhr.onerror = function () {
+                                uploadStatus.innerHTML = 'An error occurred during the file upload.';
+                                progressBar.style.width = '0';
+                                loading.style.display = 'none';
+                            };
+
+                            xhr.send(formData);
+                        }
+
+                        // Fetch files from the backend
+                        async function fetchFiles() {
+                            try {
+                                const response = await fetch('http://localhost:3000/files'); // Adjust the URL if necessary
+                                const files = await response.json();
+
+                                // Get the table body element
+                                const fileTableBody = document.querySelector('#fileTable tbody');
+                                fileTableBody.innerHTML = ''; // Clear any previous content
+
+                                // Check if there are files
+                                if (files.length === 0) {
+                                    fileTableBody.innerHTML =
+                                        '<tr class="even:bg-neutral-200 transition-all duration-300 ease-in-out hover:bg-primary"><td colspan="3" style="text-align:center;">No files uploaded yet.</td></tr>';
+                                    return;
+                                }
+
+                                // Render each file as a row in the table
+                                files.forEach(file => {
+                                    const row = document.createElement('tr');
+                                    row.classList =
+                                        'even:bg-neutral-200 transition-all duration-300 ease-in-out hover:bg-primary';
+
+                                    // Create cells for file name, IPFS hash, and view link
+                                    row.innerHTML =
+                                        `
+                        <td class="p-4">${file.fileName}</td>
+                        <td class="p-4">${file.ipfsHash}</td>
+                        <td class="p-4"><button class="btn"  title="View File"><a class="file-link" href="${file.pinataUrl}" target="_blank"><i class="fas fa-eye"></i></a></button></td>
+                    `;
+
+                                    // Append the row to the table body
+                                    fileTableBody.appendChild(row);
+                                });
+                            } catch (error) {
+                                console.error('Error fetching files:', error);
+                            }
+                        }
+
+                        // Fetch the files when the page loads
+                        window.onload = fetchFiles;
+                    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+# Node.js dependencies
+node_modules/
+
+#file uploaded
+uploads/
+
+# Environment variables
+.env
+
