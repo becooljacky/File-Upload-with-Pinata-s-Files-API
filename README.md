@@ -69,7 +69,7 @@ Make sure you have Node.js v20.12.2 installed on your machine.
 
 ## Screenshots
 
-![App Screenshot](https://coral-changing-horse-68.mypinata.cloud/ipfs/bafkreigsjcowj3ykctizkrixjii2grn6axwbkyyj4n5eyiiv6cczcnw3ly?text=App+Screenshot+Here)
+![App Screenshot](https://coral-changing-horse-68.mypinata.cloud/ipfs/bafkreigy6uasjrmmv6m35adbl3c4qqgn46cwshvvdcbkxh2a4hee7gjqvi?text=App+Screenshot+Here)
 
 
 ## License
