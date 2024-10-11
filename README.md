@@ -36,7 +36,7 @@ Make sure you have Node.js v20.12.2 installed on your machine.
 
     ```bash
     git clone https://github.com/becooljacky/File-Upload-with-Pinata-s-Files-API.git
-    cd pinata-file-upload
+    cd File-Upload-with-Pinata-s-Files-API
     ```
 
 2. Install the dependencies:
