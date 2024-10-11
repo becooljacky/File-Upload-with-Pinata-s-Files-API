@@ -50,7 +50,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 			uploadedFiles.push({
 				fileName: fileName,
 				ipfsHash: uploadResponse.IpfsHash,
-				pinataUrl: `https://coral-changing-horse-68.mypinata.cloud/ipfs/${uploadResponse.IpfsHash}`,
+				pinataUrl: `https://${process.env.PINATA_GATEWAY}/ipfs/${uploadResponse.IpfsHash}`,
 			});
 		}
 		if (uploadResponse.isDuplicate) {
