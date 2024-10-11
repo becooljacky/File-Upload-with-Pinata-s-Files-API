@@ -163,7 +163,7 @@
                         // Fetch files from the backend
                         async function fetchFiles() {
                             try {
-                                const response = await fetch('http://localhost:3000/files'); // Adjust the URL if necessary
+                                const response = await fetch('/files'); // Adjust the URL if necessary
                                 const files = await response.json();
 
                                 // Get the table body element
@@ -186,7 +186,7 @@
                                     // Create cells for file name, IPFS hash, and view link
                                     row.innerHTML =
                                         `
-                        <td class="p-4">${file.fileName}</td>
+                        <td class="p-4"><a class="file-link" href="${file.pinataUrl}" target="_blank">${file.fileName}</a></td>
                         <td class="p-4">${file.ipfsHash}</td>
                         <td class="p-4"><button class="btn"  title="View File"><a class="file-link" href="${file.pinataUrl}" target="_blank"><i class="fas fa-eye"></i></a></button></td>
                     `;
